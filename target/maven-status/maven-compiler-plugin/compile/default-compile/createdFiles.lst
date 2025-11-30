@@ -32,6 +32,7 @@ javaSpring\repository\UserRepository.class
 javaSpring\service\BorrowSlipService.class
 javaSpring\dto\request\theloai\CategoryCreationRequest.class
 javaSpring\dto\response\APIResponse.class
+javaSpring\configuration\SwaggerConfig.class
 javaSpring\dto\request\ReadingSessionRequest.class
 javaSpring\dto\response\AuthenticationResponse$Builder.class
 javaSpring\entity\Tag.class
