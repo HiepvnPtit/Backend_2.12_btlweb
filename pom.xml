@@ -40,6 +40,10 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
@@ -93,7 +97,7 @@
     </dependencies>
 
     <build>
-    <!-- Thay đổi thư mục đích thành ../target -->
+        <!-- Thay đổi thư mục đích thành ../target -->
        
         <plugins>
             <!-- Maven Jar Plugin để chỉ định Main-Class -->
@@ -104,7 +108,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                             <Main-Class>javaSpring.TrainingApplication</Main-Class> <!-- Thay thế với lớp chính của bạn -->
+                            <Main-Class>javaSpring.TrainingApplication</Main-Class> <!-- Thay thế với lớp chính của bạn -->
                         </manifestEntries>
                     </archive>
                 </configuration>
