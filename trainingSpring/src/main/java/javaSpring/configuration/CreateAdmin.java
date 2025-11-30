@@ -12,7 +12,7 @@ import javaSpring.enums.Role;
 import javaSpring.repository.UserRepository;
 
 @Configuration
-//tạo Admin khi chạy server We are not the same:)
+//tạo Admin khi chạy server We are not the same:) DMLROLEMUY42PDNXULPZ3UQN73OX3VWN
 public class CreateAdmin {
 
     private PasswordEncoder passwordEncoder;
