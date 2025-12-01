@@ -18,16 +18,24 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Các endpoint công khai cho User đăng ký, đăng nhập (POST)
-    private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/users", "/authentication/token", "/authentication/introspect"
+        // Các endpoint công khai cho User đăng ký, đăng nhập (POST)
+    private static final String[] PUBLIC_POST_USER_ENDPOINTS = {
+            "/api/users", "/authentication/token", "/authentication/introspect",
+            "/api/borrowSlips", "/api/reading-history/progress"
     };
 
-    // Các endpoint công khai cho User truy cập dữ liệu
-    private static final String[] PUBLIC_USER_ENDPOINTS = {
+    // Các endpoint công khai cho User truy cập dữ liệu (GET)
+    private static final String[] PUBLIC_GET_USER_ENDPOINTS = {
             "/api/authors", "/api/category", "/api/books",
             "/api/borrowSlips", "/api/ebooks", "/api/ebooks/{bookId}/content",
-            "/api/tags", "/api/reading-history", "/api/reading-history/progress"
+            "/api/tags", 
+            "/api/reading-history"
+    };
+ 
+    // Các endpoint công khai cho User sửa dữ liệu (PUT)
+    private static final String[] PUBLIC_PUT_USER_ENDPOINTS = {
+            "/api/users/{userId}",
+            "/api/borrowSlips", "/api/reading-history/progress"
     };
 
     // Các endpoint Swagger
@@ -61,9 +69,10 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(request ->
                 request
                         // 1. Cho phép các endpoint công khai
-                        .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, PUBLIC_USER_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.POST, PUBLIC_USER_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.POST, PUBLIC_POST_USER_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_USER_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_USER_ENDPOINTS).permitAll()
+
 
                         // 2. Cho phép Swagger truy cập mà không cần xác thực
                         .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
