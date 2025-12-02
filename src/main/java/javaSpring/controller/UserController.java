@@ -59,9 +59,9 @@ public class UserController {
     // API phụ: Lấy thông tin của chính người đang đăng nhập (Tiện lợi cho Frontend)
     APIResponse<User> getMyInfo(){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        // Bạn cần viết thêm hàm getUserByUsername trong Service nếu chưa có
-        // Hoặc tìm user và trả về
-        return null; // Demo logic
+        APIResponse<User> apiResponse = new APIResponse<>();
+        apiResponse.setResult(userService.getUserByUsername(username));
+        return apiResponse;
     }
 
     @PutMapping("/{userId}")

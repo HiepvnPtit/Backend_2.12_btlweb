@@ -104,6 +104,7 @@ public class AuthenticationService {
             .user(userResponse) 
             .build();
     } 
+    
 
     private String buildScope(User user){
         StringJoiner stringJoiner = new StringJoiner(" "); 

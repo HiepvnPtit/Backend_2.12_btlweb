@@ -1,11 +1,13 @@
 package javaSpring.configuration;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.util.Arrays; // 1. Thêm import
+import java.util.Collections; // 1. Thêm import
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-// 1. Thêm import này
+import org.springframework.security.config.Customizer; // 1. Thêm import
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,21 +19,24 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.web.cors.CorsConfiguration; // 1. Thêm import
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // 1. Thêm import
+import org.springframework.web.filter.CorsFilter; // 1. Thêm import
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // 2. QUAN TRỌNG: Thêm dòng này để dùng được @PreAuthorize
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private static final String[] PUBLIC_POST_USER_ENDPOINTS = {
             "/api/users", "/authentication/token", "/authentication/introspect",
-            "/api/borrowSlips", "/api/reading-history/progress" 
+            "/api/borrowSlips", "/api/reading-history/progress"
     };
 
     private static final String[] PUBLIC_GET_USER_ENDPOINTS = {
             "/api/authors", "/api/category", "/api/books",
             "/api/borrowSlips", "/api/ebooks", "/api/ebooks/{bookId}/content",
-            "/api/tags", 
+            "/api/tags",
             "/api/reading-history",
             "/api/books/author/{authorId}",
             "/api/books/user/{userId}",
@@ -43,11 +48,9 @@ public class SecurityConfig {
             "/api/reading-history/user/{userId}",
             "/api/reading-history/{bookId}"
     };
- 
-    // 3. QUAN TRỌNG: Xóa dòng "/api/users/{userId}" khỏi đây
+
     private static final String[] PUBLIC_PUT_USER_ENDPOINTS = {
-            // "/api/users/{userId}",  <-- ĐÃ XÓA (để bắt buộc phải có Token)
-            "/api/borrowSlips", 
+            "/api/borrowSlips",
             "/api/reading-history/progress"
     };
 
@@ -72,16 +75,41 @@ public class SecurityConfig {
                 .build();
     }
 
-    // 4. Thêm Converter để Spring hiểu ROLE (SCOPE_...) từ Token
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthorityPrefix("SCOPE_"); 
+        grantedAuthoritiesConverter.setAuthorityPrefix("SCOPE_");
         grantedAuthoritiesConverter.setAuthoritiesClaimName("scope");
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
         return jwtAuthenticationConverter;
+    }
+
+    // --- 2. QUAN TRỌNG: Thêm Bean cấu hình CORS ở đây ---
+    @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+
+        // 2.1. Cho phép các nguồn (Frontend) được truy cập
+        corsConfiguration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173", // URL của React dưới Local
+                "https://zestful-celebration-production.up.railway.app" // URL Production (nếu có Frontend deploy lên đây)
+        ));
+
+        // 2.2. Cho phép các method
+        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+
+        // 2.3. Cho phép các headers (Authorization, Content-Type...)
+        corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
+        
+        // 2.4. Cho phép gửi credentials (nếu cần cookie)
+        corsConfiguration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration);
+
+        return new CorsFilter(source);
     }
 
     @Bean
@@ -96,11 +124,14 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
         );
 
+        // --- 3. Kích hoạt CORS trong chuỗi bảo mật ---
+        httpSecurity.cors(Customizer.withDefaults()); // Dòng này sẽ tự động dùng bean corsFilter bên trên
+
         httpSecurity.oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer -> 
+                oauth2.jwt(jwtConfigurer ->
                         jwtConfigurer
                             .decoder(jwtDecoder())
-                            .jwtAuthenticationConverter(jwtAuthenticationConverter()) // Sử dụng converter
+                            .jwtAuthenticationConverter(jwtAuthenticationConverter())
                 )
         );
 
