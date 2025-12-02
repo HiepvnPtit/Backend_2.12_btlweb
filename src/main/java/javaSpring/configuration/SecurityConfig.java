@@ -1,13 +1,13 @@
 package javaSpring.configuration;
 
 import javax.crypto.spec.SecretKeySpec;
-import java.util.Arrays; // 1. Thêm import
-import java.util.Collections; // 1. Thêm import
+import java.util.Arrays;
+import java.util.Collections;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer; // 1. Thêm import
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,9 +19,9 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.web.cors.CorsConfiguration; // 1. Thêm import
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // 1. Thêm import
-import org.springframework.web.filter.CorsFilter; // 1. Thêm import
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -86,24 +86,17 @@ public class SecurityConfig {
         return jwtAuthenticationConverter;
     }
 
-    // --- 2. QUAN TRỌNG: Thêm Bean cấu hình CORS ở đây ---
+    // Cấu hình CORS (Đoạn này của bạn đã chuẩn)
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
-        // 2.1. Cho phép các nguồn (Frontend) được truy cập
         corsConfiguration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173", // URL của React dưới Local
-                "https://zestful-celebration-production.up.railway.app" // URL Production (nếu có Frontend deploy lên đây)
+                "http://localhost:5173",
+                "https://zestful-celebration-production.up.railway.app"
         ));
-
-        // 2.2. Cho phép các method
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
-
-        // 2.3. Cho phép các headers (Authorization, Content-Type...)
         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
-        
-        // 2.4. Cho phép gửi credentials (nếu cần cookie)
         corsConfiguration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -116,6 +109,11 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(request ->
                 request
+                        // --- DÒNG QUAN TRỌNG MỚI THÊM ---
+                        // Cho phép method OPTIONS đi qua mà không cần token.
+                        // Đây là bước trình duyệt kiểm tra trước khi gửi request thật.
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
+                        
                         .requestMatchers(HttpMethod.POST, PUBLIC_POST_USER_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET_USER_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_USER_ENDPOINTS).permitAll()
@@ -124,8 +122,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
         );
 
-        // --- 3. Kích hoạt CORS trong chuỗi bảo mật ---
-        httpSecurity.cors(Customizer.withDefaults()); // Dòng này sẽ tự động dùng bean corsFilter bên trên
+        // Kích hoạt CORS
+        httpSecurity.cors(Customizer.withDefaults());
 
         httpSecurity.oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwtConfigurer ->
