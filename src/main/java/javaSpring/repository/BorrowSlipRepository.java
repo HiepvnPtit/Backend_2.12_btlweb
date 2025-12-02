@@ -27,4 +27,5 @@ public interface BorrowSlipRepository extends JpaRepository<BorrowSlip, Long> {
     // 3. Theo ngày tạo (Cần đúng kiểu dữ liệu LocalDateTime)
     @Query("SELECT bs FROM BorrowSlip bs WHERE bs.createdAt = :createdAt")
     List<BorrowSlip> findByCreatedAt(@Param("createdAt") LocalDateTime createdAt);
+    List<BorrowSlip> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

@@ -2,6 +2,7 @@ package javaSpring.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,22 +125,24 @@ public class BorrowSlipService {
     }
 
     // Lấy phiếu mượn theo createdAt
-    // Input: String (ví dụ: "2023-12-01T10:15:30" hoặc "2023-12-01 10:15:30")
-    public List<BorrowSlip> getBorrowSlipsByCreatedAt(String createdAtStr) {
-        LocalDateTime dateTime;
+    public List<BorrowSlip> getBorrowSlipsByCreatedAt(String dateStr) {
         try {
-            // CÁCH 1: Nếu chuỗi gửi lên chuẩn ISO-8601 (VD: "2025-12-02T01:21:00")
-            dateTime = LocalDateTime.parse(createdAtStr);
-            
-            // CÁCH 2: Nếu chuỗi gửi lên dạng "yyyy-MM-dd HH:mm:ss" (VD: "2025-12-02 01:21:00")
-            // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            // dateTime = LocalDateTime.parse(createdAtStr, formatter);
-            
-        } catch (DateTimeParseException e) {
-            throw new RuntimeException("Định dạng ngày giờ không hợp lệ. Vui lòng dùng định dạng: yyyy-MM-ddTHH:mm:ss");
-        }
+            // 1. Xử lý chuỗi đầu vào. 
+            // Nếu người dùng lỡ gửi cả giờ (vd: "2025-12-02 14:00"), ta chỉ cắt lấy 10 ký tự đầu "2025-12-02"
+            String dateOnly = dateStr.length() > 10 ? dateStr.substring(0, 10) : dateStr;
 
-        // Truyền biến dateTime (kiểu LocalDateTime) vào repository
-        return borrowSlipRepository.findByCreatedAt(dateTime);
-    }
+            // 2. Chuyển String thành LocalDate (chỉ ngày)
+            LocalDate date = LocalDate.parse(dateOnly); 
+
+            // 3. Tính toán khoảng thời gian trong ngày đó
+            LocalDateTime startOfDay = date.atStartOfDay();            // 2025-12-02 00:00:00
+            LocalDateTime endOfDay = date.atTime(LocalTime.MAX);       // 2025-12-02 23:59:59.999999
+
+            // 4. Gọi Repository tìm trong khoảng start -> end
+            return borrowSlipRepository.findByCreatedAtBetween(startOfDay, endOfDay);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Định dạng ngày không hợp lệ. Vui lòng dùng định dạng: yyyy-MM-dd (Ví dụ: 2025-12-02)");
+        }
+}
 }
