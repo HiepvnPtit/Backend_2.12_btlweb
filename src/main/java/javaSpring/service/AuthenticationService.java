@@ -2,6 +2,7 @@ package javaSpring.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.StringJoiner;
 
@@ -24,6 +25,7 @@ import javaSpring.dto.request.user.AuthenticationRequest;
 import javaSpring.dto.request.user.IntrospectRequest;
 import javaSpring.dto.response.AuthenticationResponse;
 import javaSpring.dto.response.IntrospectResponse;
+import javaSpring.dto.response.UserResponse; 
 import javaSpring.entity.User;
 import javaSpring.exception.AppException;
 import javaSpring.exception.ErrorCode;
@@ -44,34 +46,27 @@ public class AuthenticationService {
         this.userRepository = userRepository;
     }
     
-    //hàm kiểm tra token có hợp lệ không
+    // Kiểm tra token
     public IntrospectResponse introspect(IntrospectRequest request){
         var token = request.getToken();
-        
         try {
             JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-
             SignedJWT signedJWT = SignedJWT.parse(token);
-
-            //ktra token hết hạn chưa
             Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-            var verified = signedJWT.verify(verifier); // true/false
-
-            IntrospectResponse introspectResponse = new IntrospectResponse(verified && expiryTime.after(new Date()));
-            return introspectResponse;
-            
+            var verified = signedJWT.verify(verifier);
+            return new IntrospectResponse(verified && expiryTime.after(new Date()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        
     }
     
-    //hàm xác thực và trả về token
+    // --- XÁC THỰC VÀ TRẢ VỀ TOKEN + FULL USER INFO ---
     public AuthenticationResponse authenticate(AuthenticationRequest request){
+        // 1. Tìm user trong DB
         var user = userRepository.findByUsername(request.getUsername())
             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
+        // 2. So khớp mật khẩu
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
@@ -79,29 +74,47 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
+        // 3. Tạo Token
         var token = generateToken(user);
 
+        // 4. Tạo UserResponse (ĐÃ CẬP NHẬT ĐẦY ĐỦ CÁC TRƯỜNG)
+        UserResponse userResponse = UserResponse.builder()
+                .id(user.getId())
+                .userCode(user.getUserCode())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                
+                // --- SỬA LỖI TẠI ĐÂY ---
+                // Chuyển Set sang List bằng new ArrayList<>(...)
+                .roles(new ArrayList<>(user.getRoles())) 
+                // -----------------------
+                
+                .phoneNumber(user.getPhoneNumber())
+                .location(user.getLocation())
+                .birthDate(user.getBirthDate())
+                .bookQuota(user.getBookQuota())
+                .status(user.getStatus())
+                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toLocalDate() : null)
+                .build();
+
+        // 5. Trả về kết quả gồm Token và User Info
         return AuthenticationResponse.builder()
             .token(token)
+            .authenticated(true)
+            .user(userResponse) 
             .build();
-        
     } 
 
-    //hàm để tạo scope giúp Spring phân quyền
     private String buildScope(User user){
-        StringJoiner stringJoiner = new StringJoiner(" "); //tuân theo quy tắc cách nhau bằng dấu cách
+        StringJoiner stringJoiner = new StringJoiner(" "); 
         if(!CollectionUtils.isEmpty(user.getRoles())){
-            //add từng role vào list và cách nhau bởi dấu cách
             user.getRoles().forEach(s -> stringJoiner.add(s));
         }
-
         return stringJoiner.toString();
-
     }
 
     private String generateToken(User user){
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
-
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
             .subject(user.getUsername())
             .issuer("mlongkk.com")
@@ -109,15 +122,10 @@ public class AuthenticationService {
             .expirationTime(new Date(
                 Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli())
             )
-            .claim("scope", buildScope(user)) //scope trong API dùng để giúp Spring phân quyền
+            .claim("scope", buildScope(user)) 
             .build();
-
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
-
         JWSObject jwsObject = new JWSObject(header, payload);
-        
-
-        // chữ kí
         try {
             jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
             return jwsObject.serialize();
@@ -125,11 +133,5 @@ public class AuthenticationService {
         catch (Exception e) {
             throw new RuntimeException(e);
         }
-        
     }
-
-   
-
 }
-
-

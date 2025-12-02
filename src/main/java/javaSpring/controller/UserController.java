@@ -3,6 +3,9 @@ package javaSpring.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+// 1. Import PreAuthorize
+import org.springframework.security.access.prepost.PreAuthorize; 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,43 +30,59 @@ public class UserController {
     private UserService userService;
 
     @PostMapping
-    //tạo user mới
+    // Tạo user mới (Đăng ký): Thường là public (đã config trong SecurityConfig)
     APIResponse<User> createUser(@RequestBody @Valid UserCreationRequest request){
         APIResponse<User> apiResponse = new APIResponse<>();
-            apiResponse.setResult(userService.createUser(request));
-            return apiResponse;
+        apiResponse.setResult(userService.createUser(request));
+        return apiResponse;
     }
 
     @GetMapping
-    //lấy danh sách user
+    // Lấy danh sách user: CHỈ ADMIN MỚI ĐƯỢC XEM
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     APIResponse<List<User>> getUsers(){
         APIResponse<List<User>> apiResponse = new APIResponse<>();
-            apiResponse.setResult(userService.getUsers());
-            return apiResponse;
+        apiResponse.setResult(userService.getUsers());
+        return apiResponse;
     }
 
     @GetMapping("/{userId}")
-    //lấy thông tin user theo id
+    // Lấy thông tin user: CHÍNH CHỦ HOẶC ADMIN
+    @PreAuthorize("@userSecurity.hasUserId(authentication, #userId)")
     APIResponse<User> getUser(@PathVariable Long userId){
         APIResponse<User> apiResponse = new APIResponse<>();
-            apiResponse.setResult(userService.getUser(userId));
-            return apiResponse;
+        apiResponse.setResult(userService.getUser(userId));
+        return apiResponse;
+    }
+
+    @GetMapping("/myInfo")
+    // API phụ: Lấy thông tin của chính người đang đăng nhập (Tiện lợi cho Frontend)
+    APIResponse<User> getMyInfo(){
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        // Bạn cần viết thêm hàm getUserByUsername trong Service nếu chưa có
+        // Hoặc tìm user và trả về
+        return null; // Demo logic
     }
 
     @PutMapping("/{userId}")
-    //cập nhật thông tin user theo id
+    // Cập nhật: CHÍNH CHỦ HOẶC ADMIN MỚI ĐƯỢC SỬA
+    // @userSecurity: Gọi đến bean UserSecurity đã tạo
+    // authentication: Tự động lấy user đang đăng nhập
+    // #userId: Lấy tham số userId từ URL
+    @PreAuthorize("@userSecurity.hasUserId(authentication, #userId)")
     APIResponse<User> updateUser(@PathVariable Long userId, @RequestBody UserUpdateRequest request){
         APIResponse<User> apiResponse = new APIResponse<>();
-            apiResponse.setResult(userService.updateUser(userId, request));
-            return apiResponse;
+        apiResponse.setResult(userService.updateUser(userId, request));
+        return apiResponse;
     }
 
     @DeleteMapping("/{userId}")
-    //xóa user theo id
+    // Xóa user: CHỈ ADMIN MỚI ĐƯỢC XÓA
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     APIResponse<String> deleteUser(@PathVariable Long userId){
         APIResponse<String> apiResponse = new APIResponse<>();
-            apiResponse.setMessage("User has been deleted");
-            userService.deleteUser(userId);
-            return apiResponse;
+        apiResponse.setMessage("User has been deleted");
+        userService.deleteUser(userId);
+        return apiResponse;
     }
 }

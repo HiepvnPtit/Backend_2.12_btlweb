@@ -1,50 +1,22 @@
 package javaSpring.dto.response;
 
 import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Data
-@FieldDefaults(level= AccessLevel.PRIVATE)
-
-public class AuthenticationResponse{
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class AuthenticationResponse {
+    
     String token;
-
-    public AuthenticationResponse() {}
-
     
-    public AuthenticationResponse(String token) {
-        this.token = token;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public static class Builder {
-        private String token;
-
-        public Builder token(String token){
-            this.token = token;
-            return this;
-        }
-
-        public AuthenticationResponse build() {
-            return new AuthenticationResponse(token);
-        }
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
+    boolean authenticated;
     
-    
-
+    UserResponse user;
 }
-
-
-

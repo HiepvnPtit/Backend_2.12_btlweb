@@ -1,6 +1,7 @@
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\configuration\CreateAdmin.java
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\configuration\SecurityConfig.java
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\configuration\SwaggerConfig.java
+C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\configuration\UserSecurity.java
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\controller\AuthenticationController.java
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\controller\AuthorController.java
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\controller\BookController.java
@@ -25,6 +26,7 @@ C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\dto\response\APIResponse.java
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\dto\response\AuthenticationResponse.java
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\dto\response\IntrospectResponse.java
+C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\dto\response\UserResponse.java
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\entity\Author.java
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\entity\Book.java
 C:\BACKUP\data2\python\java\java_backend\trainingSpring\trainingSpring\src\main\java\javaSpring\entity\BorrowSlip.java
