@@ -22,6 +22,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 
 @Configuration
 @EnableWebSecurity
@@ -86,14 +87,16 @@ public class SecurityConfig {
         return jwtAuthenticationConverter;
     }
 
-    // Cấu hình CORS (Đoạn này của bạn đã chuẩn)
+    // --- SỬA QUAN TRỌNG: Cấu hình CORS ---
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
         corsConfiguration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",
-                "https://zestful-celebration-production.up.railway.app"
+                "http://localhost:5173", // Frontend 1
+                "http://localhost:5174", // Frontend 2 (Cổng Vite của bạn đang chạy ở đây!)
+                "https://zestful-celebration-production.up.railway.app",
+                "https://hiepvnptitgithubio-production.up.railway.app"
         ));
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
@@ -105,35 +108,37 @@ public class SecurityConfig {
         return new CorsFilter(source);
     }
 
+    // --- SỬA QUAN TRỌNG: Security Filter Chain ---
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(request ->
-                request
-                        // --- DÒNG QUAN TRỌNG MỚI THÊM ---
-                        // Cho phép method OPTIONS đi qua mà không cần token.
-                        // Đây là bước trình duyệt kiểm tra trước khi gửi request thật.
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
-                        
-                        .requestMatchers(HttpMethod.POST, PUBLIC_POST_USER_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_USER_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_USER_ENDPOINTS).permitAll()
-                        .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
-                        .requestMatchers("/error").permitAll()
-                        .anyRequest().authenticated()
-        );
+        httpSecurity
+            // 1. Tắt CSRF bằng cú pháp mới (Sửa lỗi biên dịch)
+            .csrf(AbstractHttpConfigurer::disable)
+            
+            // 2. Kích hoạt CORS (Sẽ dùng Bean corsFilter ở trên)
+            .cors(Customizer.withDefaults())
 
-        // Kích hoạt CORS
-        httpSecurity.cors(Customizer.withDefaults());
+            // 3. Phân quyền
+            .authorizeHttpRequests(request -> request
+                    // Cho phép OPTIONS request (Pre-flight check của trình duyệt) đi qua
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    
+                    .requestMatchers(HttpMethod.POST, PUBLIC_POST_USER_ENDPOINTS).permitAll()
+                    .requestMatchers(HttpMethod.GET, PUBLIC_GET_USER_ENDPOINTS).permitAll()
+                    .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_USER_ENDPOINTS).permitAll()
+                    .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
+                    .requestMatchers("/error").permitAll() // Cho phép hiển thị lỗi
+                    .anyRequest().authenticated()
+            )
 
-        httpSecurity.oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer ->
-                        jwtConfigurer
-                            .decoder(jwtDecoder())
-                            .jwtAuthenticationConverter(jwtAuthenticationConverter())
+            // 4. Cấu hình Resource Server (JWT)
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwtConfigurer -> jwtConfigurer
+                    .decoder(jwtDecoder())
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
                 )
-        );
+            );
 
-        httpSecurity.csrf().disable();
         return httpSecurity.build();
     }
 }
