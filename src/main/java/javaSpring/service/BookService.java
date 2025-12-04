@@ -2,7 +2,7 @@ package javaSpring.service;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 import javaSpring.entity.Author;
 import javaSpring.entity.Book;
 import javaSpring.entity.Category;
@@ -11,14 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javaSpring.dto.request.BookCreationRequest;
-import javaSpring.entity.*;
-import javaSpring.repository.*;
+
 import javaSpring.repository.TagRepository;
 import javaSpring.repository.AuthorRepository;
 import javaSpring.repository.CategoryRepository;
 import javaSpring.repository.BookRepository;
 
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 
 @Service
@@ -139,5 +140,23 @@ public class BookService {
             book.setTags(new HashSet<>());
         }
         return bookRepository.save(book);
+    }
+
+    // Lấy sách theo phân trang (pageNumber)
+    public List<Book> getBooksByPage(int pageNumber) {
+        // Quy tắc: 
+        // Người dùng nhập trang 1 -> Hệ thống lấy index 0
+        // Người dùng nhập trang 2 -> Hệ thống lấy index 1
+        int pageIndex = (pageNumber > 0) ? pageNumber - 1 : 0;
+        int pageSize = 20; // Cố định 20 sách/trang theo yêu cầu
+
+        // Tạo đối tượng phân trang
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+
+        // Gọi repository
+        Page<Book> bookPage = bookRepository.findAll(pageable);
+
+        // Trả về List kết quả
+        return bookPage.getContent();
     }
 }
