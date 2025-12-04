@@ -33,6 +33,11 @@ public class AuthorService {
         authorRepository.deleteById(authorId);
     }
 
+    // Lấy thông tin tác giả theo tên (tìm kiếm gần đúng, không phân biệt hoa thường)
+    public List<Author> getAuthorsByAuthorName(String authorName) {
+        return authorRepository.findByAuthorNameContainingIgnoreCase(authorName);
+    }
+
     // Lấy thông tin tác giả theo id
     public Author getAuthor(Long AuthorId) {
         return authorRepository.findById(AuthorId)
