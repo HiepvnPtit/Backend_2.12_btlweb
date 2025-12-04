@@ -62,7 +62,7 @@ public class BookController {
         response.setResult(bookService.getBooksByCategoryAndTags(categoryId, tagIds));  // Lấy sách theo thể loại và tag từ service
         return response;
     }
-
+    
     // Tìm sách theo tên
     @GetMapping("/searchByTitle")
     public APIResponse<List<Book>> getBooksByTitle(@RequestParam String title) {
@@ -70,7 +70,7 @@ public class BookController {
         response.setResult(bookService.getBooksByTitle(title));  // Tìm sách theo tên từ service
         return response;
     }
-
+    
     // Cập nhật sách theo ID
     @PutMapping("/{id}")
     public APIResponse<Book> updateBook(@PathVariable Long id, @RequestBody BookCreationRequest request) {
@@ -83,6 +83,16 @@ public class BookController {
     public APIResponse<Void> deleteBook(@PathVariable Long id) {
         APIResponse<Void> response = new APIResponse<>();
         bookService.deleteBook(id);  // Xóa sách theo ID từ service
+        return response;
+    }
+
+    // Lấy sách theo phân trang
+    // URL: http://localhost:8080/books/page/1 (Lấy 20 sách đầu)
+    // URL: http://localhost:8080/books/page/2 (Lấy 20 sách tiếp theo)
+    @GetMapping("/page/{pageNumber}")
+    public APIResponse<List<Book>> getBooksByPage(@PathVariable int pageNumber) {
+        APIResponse<List<Book>> response = new APIResponse<>();
+        response.setResult(bookService.getBooksByPage(pageNumber));
         return response;
     }
 }
