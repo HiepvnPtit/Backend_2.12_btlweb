@@ -53,19 +53,23 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    // Xoá user theo ID
     public void deleteUser(Long id){
         userRepository.deleteById(id);
     }
 
+    // Lấy tất cả user
     public List<User> getUsers(){
         return userRepository.findAll();
     }
 
+    // Lấy user theo ID
     public User getUser(Long id){
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    // Lấy user theo username
     public User getUserByUsername(String username){
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
