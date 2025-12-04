@@ -98,6 +98,7 @@ public class BookService {
         bookRepository.deleteById(id);
     }
 
+    // Cập nhật thông tin sách
     public Book updateBook(Long bookId, BookCreationRequest request) {
         Book book = getBook(bookId); // Tái sử dụng hàm getBook ở dưới để code gọn hơn
 
