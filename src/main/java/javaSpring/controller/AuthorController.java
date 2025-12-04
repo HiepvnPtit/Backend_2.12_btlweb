@@ -28,6 +28,14 @@ public class AuthorController {
         return response;
     }
 
+    // lấy tác giả theo tên
+    @GetMapping("{authorName}")
+    public APIResponse<List<Author>> getAuthorsByAuthorName(@PathVariable String authorName) {
+        APIResponse<List<Author>> response = new APIResponse<>();
+        response.setResult(authorService.getAuthorsByAuthorName(authorName));
+        return response;
+    }
+
     @GetMapping("/{authorId}")
     public APIResponse<Author> getAuthor(@PathVariable Long authorId) {
         APIResponse<Author> response = new APIResponse<>();
