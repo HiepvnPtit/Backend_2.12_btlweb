@@ -71,6 +71,13 @@ public class BookController {
         return response;
     }
 
+    // Cập nhật sách theo ID
+    @PutMapping("/{id}")
+    public APIResponse<Book> updateBook(@PathVariable Long id, @RequestBody BookCreationRequest request) {
+        APIResponse<Book> response = new APIResponse<>();
+        response.setResult(bookService.updateBook(id, request));  // Cập nhật sách từ service
+        return response;
+    }
     // Xóa sách theo ID
     @DeleteMapping("/{id}")
     public APIResponse<Void> deleteBook(@PathVariable Long id) {
