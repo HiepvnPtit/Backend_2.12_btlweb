@@ -64,6 +64,14 @@ public class UserController {
         return apiResponse;
     }
 
+    //tìm user theo username
+    @GetMapping("{username}")
+    APIResponse<User> getUserByUsername(@PathVariable String username){
+        APIResponse<User> apiResponse = new APIResponse<>();
+        apiResponse.setResult(userService.getUserByUsername(username));
+        return apiResponse;
+    }
+
     @PutMapping("/{userId}")
     // Cập nhật: CHÍNH CHỦ HOẶC ADMIN MỚI ĐƯỢC SỬA
     // @userSecurity: Gọi đến bean UserSecurity đã tạo
