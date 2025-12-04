@@ -65,7 +65,7 @@ public class UserController {
     }
 
     //tìm user theo username
-    @GetMapping("{username}")
+    @GetMapping("/username/{username}")
     APIResponse<User> getUserByUsername(@PathVariable String username){
         APIResponse<User> apiResponse = new APIResponse<>();
         apiResponse.setResult(userService.getUserByUsername(username));
