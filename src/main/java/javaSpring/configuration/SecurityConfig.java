@@ -55,6 +55,10 @@ public class SecurityConfig {
             "/api/reading-history/progress"
     };
 
+    private static final String[] GET_ADMIN_ENDPOINTS = {
+            "/api/users/{username}"
+    };
+
     private static final String[] SWAGGER_ENDPOINTS = {
             "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
             "/v2/api-docs", "/webjars/**", "/swagger-resources/**"
@@ -127,6 +131,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, PUBLIC_GET_USER_ENDPOINTS).permitAll()
                     .requestMatchers(HttpMethod.PUT, PUBLIC_PUT_USER_ENDPOINTS).permitAll()
                     .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
+                    //Chỉ Admin mới xem được danh sách users
+                    .requestMatchers(HttpMethod.GET, GET_ADMIN_ENDPOINTS).hasAuthority("SCOPE_ADMIN")
                     .requestMatchers("/error").permitAll() // Cho phép hiển thị lỗi
                     .anyRequest().authenticated()
             )
