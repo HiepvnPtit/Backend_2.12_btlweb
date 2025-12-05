@@ -60,4 +60,9 @@ public class EbookService {
 
         return ebookPageRepository.save(page);
     }
+
+    // API mới: Lấy danh sách các cuốn sách có nội dung Ebook
+    public List<Book> getAllEbooks() {
+        return bookRepository.findAllBooksWithEbookContent();
+    }
 }
