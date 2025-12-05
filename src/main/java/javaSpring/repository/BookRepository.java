@@ -38,4 +38,11 @@ public interface BookRepository extends JpaRepository<Book, Long> {
            "AND t.id IN :tagIds")
     List<Book> findBooksByCategoryAndTags(@Param("categoryId") Long categoryId, 
                                           @Param("tagIds") List<Long> tagIds);
+
+                                          
+    // 4. Lấy sách có nội dung ebook (ebookPages không rỗng)
+    // Logic: Lấy các cuốn sách (DISTINCT để không trùng) 
+    // mà có liên kết (JOIN) với bảng ebookPages
+    @Query("SELECT DISTINCT b FROM Book b JOIN b.ebookPages")
+    List<Book> findAllBooksWithEbookContent();
 }
