@@ -146,7 +146,27 @@ public class BorrowSlipService {
         }
     }
 
-        
- 
+    //xóa phiếu mượn
+    public void deleteBorrowSlip(Long id) {
+        // 1. Tìm phiếu mượn
+        BorrowSlip slip = borrowSlipRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Borrow slip not found"));
 
+        // 2. Xử lý hoàn trả số lượng sách vào kho (Inventory Restoration)
+        // Duyệt qua từng chi tiết trong phiếu
+        if (slip.getDetails() != null) {
+            for (BorrowSlipDetail detail : slip.getDetails()) {
+                // Chỉ cộng lại kho nếu sách đó CHƯA ĐƯỢC TRẢ (Status != RETURNED)
+                // Nếu status là BORROWED hoặc PENDING, nghĩa là sách đang bị trừ kho, cần cộng lại.
+                if (!"RETURNED".equalsIgnoreCase(detail.getStatus())) {
+                    Book book = detail.getBook();
+                    book.setAvailableQuantity(book.getAvailableQuantity() + 1);
+                    bookRepository.save(book);
+                }
+            }
+        }
+
+        // 3. Xóa phiếu (Do có CascadeType.ALL ở Entity BorrowSlip, nó sẽ tự xóa luôn các Details)
+        borrowSlipRepository.delete(slip);
+    }
 }
