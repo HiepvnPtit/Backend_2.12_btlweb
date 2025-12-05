@@ -2,6 +2,7 @@ package javaSpring.controller;
 
 import javaSpring.dto.request.EbookPageRequest;
 import javaSpring.dto.response.APIResponse;
+import javaSpring.entity.Book;
 import javaSpring.entity.EbookPage;
 import javaSpring.service.EbookService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,14 @@ public class EbookController {
     public APIResponse<EbookPage> getPageById(@PathVariable Long pageId) {
         APIResponse<EbookPage> response = new APIResponse<>();
         response.setResult(ebookService.getPageById(pageId));
+        return response;
+    }
+
+    // API MỚI: Lấy tất cả sách Ebook (những sách đã được up trang)
+    @GetMapping
+    public APIResponse<List<Book>> getAllEbooks() {
+        APIResponse<List<Book>> response = new APIResponse<>();
+        response.setResult(ebookService.getAllEbooks());
         return response;
     }
 }
