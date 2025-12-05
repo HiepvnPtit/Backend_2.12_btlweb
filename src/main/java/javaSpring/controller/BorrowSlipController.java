@@ -42,6 +42,15 @@ public class BorrowSlipController {
         return response;
     }
 
+    @DeleteMapping("/delete/{id}")
+    public APIResponse<String> deleteBorrowSlip(@PathVariable Long id) {
+        borrowSlipService.deleteBorrowSlip(id);
+        
+        APIResponse<String> response = new APIResponse<>();
+        response.setMessage("Borrow slip deleted successfully (Inventory restored)");
+        return response;
+    }
+
     // Lấy phiếu mượn theo userId
     @GetMapping("/user/{userId}")
     public APIResponse<List<BorrowSlip>> getBorrowSlipsByUser(@PathVariable Long userId) {
