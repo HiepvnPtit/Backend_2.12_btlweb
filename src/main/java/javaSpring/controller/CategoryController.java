@@ -61,6 +61,7 @@ public class CategoryController {
     APIResponse<String> deleteCategory(@PathVariable Long CategoryId){
         APIResponse<String> apiResponse = new APIResponse<>();
             apiResponse.setMessage("Thể loại đã bị xóa");
+            CategoryService.deleteCategory(CategoryId);
             return apiResponse;
 }
 }
