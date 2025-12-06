@@ -146,7 +146,7 @@ public class BorrowSlipService {
         }
     }
 
-    //xóa phiếu mượn
+    //xóa phiếu mượn theo id phiếu mượn
     public void deleteBorrowSlip(Long id) {
         // 1. Tìm phiếu mượn
         BorrowSlip slip = borrowSlipRepository.findById(id)
@@ -169,4 +169,37 @@ public class BorrowSlipService {
         // 3. Xóa phiếu (Do có CascadeType.ALL ở Entity BorrowSlip, nó sẽ tự xóa luôn các Details)
         borrowSlipRepository.delete(slip);
     }
+
+    // Xóa tất cả phiếu mượn của một user theo userId
+    @Transactional
+    public void deleteAllByUserId(Long userId) {
+        // 1. Kiểm tra User có tồn tại không
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("User not found");
+        }
+
+        // 2. Lấy danh sách phiếu mượn của User đó
+        List<BorrowSlip> userSlips = borrowSlipRepository.findByReaderId(userId);
+
+        if (userSlips.isEmpty()) {
+            throw new RuntimeException("This user has no borrow slips to delete");
+        }
+
+        // 3. Xử lý hoàn trả kho sách trước khi xóa
+        for (BorrowSlip slip : userSlips) {
+            // Duyệt qua từng chi tiết trong phiếu
+            for (BorrowSlipDetail detail : slip.getDetails()) {
+                // Nếu sách đang ở trạng thái MƯỢN, thì phải cộng lại kho trước khi xóa
+                if ("BORROWED".equals(detail.getStatus())) {
+                    Book book = detail.getBook();
+                    book.setAvailableQuantity(book.getAvailableQuantity() + 1);
+                    bookRepository.save(book);
+                }
+            }
+            
+            // 4. Xóa phiếu (Cascade sẽ tự xóa các chi tiết kèm theo)
+            borrowSlipRepository.delete(slip);
+        }
+    }
+    
 }
