@@ -28,4 +28,7 @@ public interface BorrowSlipRepository extends JpaRepository<BorrowSlip, Long> {
     @Query("SELECT bs FROM BorrowSlip bs WHERE bs.createdAt = :createdAt")
     List<BorrowSlip> findByCreatedAt(@Param("createdAt") LocalDateTime createdAt);
     List<BorrowSlip> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    // 4. Theo ReaderId
+    List<BorrowSlip> findByReaderId(Long readerId);
 }
