@@ -44,4 +44,12 @@ public class EbookController {
         response.setResult(ebookService.getPageById(pageId));
         return response;
     }
+
+    // Lấy thông tin tất cả các trang sách
+    @GetMapping
+    public APIResponse<List<EbookPage>> getAllEbookPages() {
+        APIResponse<List<EbookPage>> response = new APIResponse<>();
+        response.setResult(ebookService.getAllEbookPages());
+        return response;
+    }
 }
