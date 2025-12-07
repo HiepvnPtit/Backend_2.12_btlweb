@@ -52,4 +52,12 @@ public class EbookController {
         response.setResult(ebookService.getAllEbookPages());
         return response;
     }
+
+    // Cập nhật thông tin trang sách
+    @PutMapping("/pages/{pageId}")
+    public APIResponse<EbookPage> updatePage(@PathVariable Long pageId, @RequestBody EbookPageRequest request) {
+        APIResponse<EbookPage> response = new APIResponse<>();
+        response.setResult(ebookService.updatePage(pageId, request));
+        return response;
+    }
 }
