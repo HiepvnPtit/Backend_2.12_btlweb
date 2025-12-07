@@ -8,6 +8,7 @@ public enum ErrorCode {
     PASSWORD_INVALID(1004, "Password must be at least 8 characters."),
     USER_NOT_EXISTED(1005, "User not existed."),
     UNAUTHENTICATED(1006, "Unauthenticated."),
+    CANNOT_DELETE_ADMIN(1007, "Cannot delete Admin account")
     ;
 
     private int code;

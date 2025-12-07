@@ -54,7 +54,17 @@ public class UserService {
     }
 
     // Xoá user theo ID
-    public void deleteUser(Long id){
+public void deleteUser(Long id) {
+        // 1. Tìm user trong DB, nếu không thấy thì báo lỗi
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // 2. Kiểm tra xem trong danh sách roles có chứa chữ "ADMIN" không
+        if (user.getRoles() != null && user.getRoles().contains("ADMIN")) {
+            throw new AppException(ErrorCode.CANNOT_DELETE_ADMIN);
+        }
+
+        // 3. Nếu không phải Admin thì xóa
         userRepository.deleteById(id);
     }
 
