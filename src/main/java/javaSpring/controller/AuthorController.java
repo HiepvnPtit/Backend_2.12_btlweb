@@ -5,6 +5,7 @@ import javaSpring.dto.response.APIResponse;
 import javaSpring.entity.Author;
 import javaSpring.service.AuthorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class AuthorController {
     @Autowired 
     private AuthorService authorService;
 
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     @PostMapping
     public APIResponse<Author> createAuthor(@RequestBody AuthorCreationRequest request) {
         APIResponse<Author> response = new APIResponse<>();
@@ -43,6 +45,7 @@ public class AuthorController {
         return response;
     }
 
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     @PutMapping("/{authorId}")
     public APIResponse<Author> updateAuthor(@PathVariable Long authorId, @RequestBody AuthorCreationRequest request) {
         APIResponse<Author> response = new APIResponse<>();
@@ -50,6 +53,7 @@ public class AuthorController {
         return response;
     }
 
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @DeleteMapping("/{authorId}")
     public APIResponse<Void> deleteAuthor(@PathVariable Long authorId) {
         authorService.deleteAuthor(authorId);

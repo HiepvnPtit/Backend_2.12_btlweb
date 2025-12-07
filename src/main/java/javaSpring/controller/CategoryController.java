@@ -3,6 +3,7 @@ package javaSpring.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +25,7 @@ public class CategoryController {
     @Autowired
     private CategoryService CategoryService;
 
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @PostMapping
     //tạo thể loại mới
     APIResponse<Category> createCategory(@RequestBody @Valid CategoryCreationRequest request){
@@ -48,6 +50,7 @@ public class CategoryController {
             return apiResponse;
     }
 
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @PutMapping("/{CategoryId}")
     //cập nhật thông tin thể loại theo id
     APIResponse<Category> updateCategory(@PathVariable Long CategoryId, @RequestBody CategoryUpdateRequest request){
@@ -56,6 +59,7 @@ public class CategoryController {
             return apiResponse;
     }
 
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @DeleteMapping("/{CategoryId}")
     //xóa thể loại theo id
     APIResponse<String> deleteCategory(@PathVariable Long CategoryId){

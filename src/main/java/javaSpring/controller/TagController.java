@@ -3,6 +3,7 @@ package javaSpring.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javaSpring.dto.request.TagCreationRequest;
@@ -17,6 +18,7 @@ public class TagController {
     private TagService tagService;
 
     // Create tag
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @PostMapping
     public APIResponse<Tag> createTag(@RequestBody TagCreationRequest request) {
         APIResponse<Tag> response = new APIResponse<>();
@@ -33,6 +35,7 @@ public class TagController {
     }
 
     // Delete tag by ID
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @DeleteMapping("/{id}")
     public APIResponse<String> deleteTag(@PathVariable Long id) {
         tagService.deleteTag(id);
@@ -42,6 +45,7 @@ public class TagController {
     }
 
     // Update tag
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @PutMapping("/{id}")
     public APIResponse<Tag> updateTag(@PathVariable Long id, @RequestBody TagCreationRequest request) {
         APIResponse<Tag> response = new APIResponse<>();

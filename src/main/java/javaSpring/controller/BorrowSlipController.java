@@ -3,6 +3,7 @@ package javaSpring.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javaSpring.dto.request.BorrowSlipCreationRequest;
@@ -42,6 +43,7 @@ public class BorrowSlipController {
         return response;
     }
 
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @DeleteMapping("/delete/{id}")
     public APIResponse<String> deleteBorrowSlip(@PathVariable Long id) {
         borrowSlipService.deleteBorrowSlip(id);
@@ -52,6 +54,7 @@ public class BorrowSlipController {
     }
 
     // Xóa tất cả phiếu mượn của 1 User
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @DeleteMapping("/user/{userId}")
     public APIResponse<String> deleteAllSlipsByUser(@PathVariable Long userId) {
         borrowSlipService.deleteAllByUserId(userId);

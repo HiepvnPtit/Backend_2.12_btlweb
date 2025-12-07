@@ -6,6 +6,7 @@ import javaSpring.entity.Book;
 import javaSpring.entity.EbookPage;
 import javaSpring.service.EbookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class EbookController {
     @Autowired private EbookService ebookService;
 
     // Admin: Thêm trang cho sách
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @PostMapping("/pages")
     public APIResponse<EbookPage> addPage(@RequestBody EbookPageRequest request) {
         APIResponse<EbookPage> response = new APIResponse<>();
@@ -31,6 +33,7 @@ public class EbookController {
     }
 
     // Admin: Xoá trang sách
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @DeleteMapping("/pages/{pageId}")
     public APIResponse<Void> deletePage(@PathVariable Long pageId) {
         ebookService.deletePage(pageId);
@@ -54,6 +57,7 @@ public class EbookController {
     }
 
     // Cập nhật thông tin trang sách
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @PutMapping("/pages/{pageId}")
     public APIResponse<EbookPage> updatePage(@PathVariable Long pageId, @RequestBody EbookPageRequest request) {
         APIResponse<EbookPage> response = new APIResponse<>();

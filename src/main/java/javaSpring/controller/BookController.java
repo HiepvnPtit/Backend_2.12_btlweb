@@ -5,6 +5,7 @@ import javaSpring.dto.response.APIResponse;
 import javaSpring.entity.Book;
 import javaSpring.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class BookController {
     private BookService bookService;
 
     // Tạo sách mới
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @PostMapping
     public APIResponse<Book> createBook(@RequestBody BookCreationRequest request) {
         APIResponse<Book> response = new APIResponse<>();
@@ -72,6 +74,7 @@ public class BookController {
     }
     
     // Cập nhật sách theo ID
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     @PutMapping("/{id}")
     public APIResponse<Book> updateBook(@PathVariable Long id, @RequestBody BookCreationRequest request) {
         APIResponse<Book> response = new APIResponse<>();
@@ -79,6 +82,7 @@ public class BookController {
         return response;
     }
     // Xóa sách theo ID
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @DeleteMapping("/{id}")
     public APIResponse<Void> deleteBook(@PathVariable Long id) {
         APIResponse<Void> response = new APIResponse<>();
