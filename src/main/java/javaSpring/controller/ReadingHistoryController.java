@@ -5,6 +5,7 @@ import javaSpring.dto.response.APIResponse;
 import javaSpring.entity.ReadingHistory;
 import javaSpring.service.ReadingHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class ReadingHistoryController {
 
     // Xem lịch sử đọc của mình
     @GetMapping("/user/{userId}")
+    @PreAuthorize("@userSecurity.hasUserId(authentication, #userId)")
     public APIResponse<List<ReadingHistory>> getUserHistory(@PathVariable Long userId) {
         APIResponse<List<ReadingHistory>> response = new APIResponse<>();
         response.setResult(historyService.getUserHistory(userId));

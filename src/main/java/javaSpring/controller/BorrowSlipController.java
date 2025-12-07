@@ -28,6 +28,7 @@ public class BorrowSlipController {
     }
 
     // Lấy danh sách tất cả phiếu mượn
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") 
     @GetMapping
     public APIResponse<List<BorrowSlip>> getAllBorrowSlips() {
         APIResponse<List<BorrowSlip>> response = new APIResponse<>();
@@ -37,6 +38,7 @@ public class BorrowSlipController {
 
     // Lấy chi tiết 1 phiếu mượn
     @GetMapping("/{id}")
+    @PreAuthorize("@userSecurity.hasUserId(authentication, #userId)")
     public APIResponse<BorrowSlip> getBorrowSlip(@PathVariable Long id) {
         APIResponse<BorrowSlip> response = new APIResponse<>();
         response.setResult(borrowSlipService.getBorrowSlip(id));
@@ -66,6 +68,7 @@ public class BorrowSlipController {
 
     // Lấy phiếu mượn theo userId
     @GetMapping("/user/{userId}")
+    @PreAuthorize("@userSecurity.hasUserId(authentication, #userId)")
     public APIResponse<List<BorrowSlip>> getBorrowSlipsByUser(@PathVariable Long userId) {
         APIResponse<List<BorrowSlip>> response = new APIResponse<>();
         response.setResult(borrowSlipService.getBorrowSlipsByUser(userId));  // Lấy phiếu mượn theo userId từ service

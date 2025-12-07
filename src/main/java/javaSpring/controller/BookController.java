@@ -51,6 +51,7 @@ public class BookController {
 
     // Lấy sách theo userId
     @GetMapping("/user/{userId}")
+    @PreAuthorize("@userSecurity.hasUserId(authentication, #userId)")
     public APIResponse<List<Book>> getBooksByUser(@PathVariable Long userId) {
         APIResponse<List<Book>> response = new APIResponse<>();
         response.setResult(bookService.getBooksByUser(userId));  // Lấy sách theo người dùng từ service
