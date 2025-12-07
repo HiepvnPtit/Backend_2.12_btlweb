@@ -44,3 +44,4 @@ public class EbookController {
         response.setResult(ebookService.getPageById(pageId));
         return response;
     }
+}
