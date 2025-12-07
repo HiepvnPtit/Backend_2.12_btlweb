@@ -1,55 +1,68 @@
-package javaSpring.controller;
+package javaSpring.service;
 
 import javaSpring.dto.request.EbookPageRequest;
-import javaSpring.dto.response.APIResponse;
 import javaSpring.entity.Book;
 import javaSpring.entity.EbookPage;
-import javaSpring.service.EbookService;
+import javaSpring.repository.BookRepository;
+import javaSpring.repository.EbookPageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/ebooks")
-public class EbookController {
-    @Autowired private EbookService ebookService;
+@Service
+public class EbookService {
+    @Autowired private EbookPageRepository ebookPageRepository;
+    @Autowired private BookRepository bookRepository;
 
-    // Admin: Thêm trang cho sách
-    @PostMapping("/pages")
-    public APIResponse<EbookPage> addPage(@RequestBody EbookPageRequest request) {
-        APIResponse<EbookPage> response = new APIResponse<>();
-        response.setResult(ebookService.addPage(request));
-        return response;
+    // Thêm trang cho sách
+    public EbookPage addPage(EbookPageRequest request) {
+        Book book = bookRepository.findById(request.getBookId())
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
+        EbookPage page = new EbookPage();
+            page.setBook(book);
+            page.setPageNumber(request.getPageNumber());
+            page.setImageUrl(request.getImageUrl());
+            page.setContentText(request.getContentText());
+            page.setWidth(request.getWidth());
+            page.setHeight(request.getHeight());
+
+        return ebookPageRepository.save(page);
     }
 
-    // User: Lấy nội dung sách để đọc (List các trang ảnh/text)
-    @GetMapping("/{bookId}/content")
-    public APIResponse<List<EbookPage>> getBookContent(@PathVariable Long bookId) {
-        APIResponse<List<EbookPage>> response = new APIResponse<>();
-        response.setResult(ebookService.getBookContent(bookId));
-        return response;
+    // Lấy nội dung sách để đọc
+    public List<EbookPage> getBookContent(Long bookId) {
+        return ebookPageRepository.findByBookIdOrderByPageNumberAsc(bookId);
     }
 
-    // Admin: Xoá trang sách
-    @DeleteMapping("/pages/{pageId}")
-    public APIResponse<Void> deletePage(@PathVariable Long pageId) {
-        ebookService.deletePage(pageId);
-        return new APIResponse<>();
+    // Xoá trang sách
+    public void deletePage(Long pageId) {
+        ebookPageRepository.deleteById(pageId);
     }
 
     // Lấy thông tin trang sách theo ID
-    @GetMapping("/pages/{pageId}")
-    public APIResponse<EbookPage> getPageById(@PathVariable Long pageId) {
-        APIResponse<EbookPage> response = new APIResponse<>();
-        response.setResult(ebookService.getPageById(pageId));
-        return response;
+    public EbookPage getPageById(Long pageId) {
+        return ebookPageRepository.findById(pageId)
+                .orElseThrow(() -> new RuntimeException("Ebook page not found"));
     }
 
-    // API MỚI: Lấy tất cả trang sách Ebook
-    @GetMapping
-    public APIResponse<List<EbookPage>> getAllEbookPages(){
-        APIResponse<List<EbookPage>> response = new APIResponse<>();
-        response.setResult(ebookService.getAllEbookPages());
-        return response;
+    // Cập nhật thông tin trang sách
+    public EbookPage updatePage(Long pageId, EbookPageRequest request) {
+        EbookPage page = ebookPageRepository.findById(pageId)
+                .orElseThrow(() -> new RuntimeException("Ebook page not found"));
+
+        page.setPageNumber(request.getPageNumber());
+        page.setImageUrl(request.getImageUrl());
+        page.setContentText(request.getContentText());
+        page.setWidth(request.getWidth());
+        page.setHeight(request.getHeight());
+
+        return ebookPageRepository.save(page);
+    }
+
+    // Lấy tất cả trang sách Ebook 
+    public List<EbookPage> getAllEbookPages() {
+        return ebookPageRepository.findAll();
     }
 }
