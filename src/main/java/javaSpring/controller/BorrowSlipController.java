@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javaSpring.dto.request.BorrowSlipCreationRequest;
+import javaSpring.dto.request.BorrowSlipUpdateRequest;
 import javaSpring.dto.response.APIResponse;
 import javaSpring.entity.BorrowSlip;
 import javaSpring.entity.BorrowSlipDetail;
@@ -101,4 +102,11 @@ public class BorrowSlipController {
         return response;
     }
 
+    // Cập nhật phiếu mượn
+    @PutMapping("/{id}")
+    public APIResponse<BorrowSlip> updateBorrowSlip(@PathVariable Long id, @RequestBody BorrowSlipUpdateRequest request) {
+        APIResponse<BorrowSlip> response = new APIResponse<>();
+        response.setResult(borrowSlipService.updateBorrowSlip(id, request));
+        return response;
+    }
 }

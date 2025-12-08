@@ -3,16 +3,17 @@ package javaSpring.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javaSpring.dto.request.*;
-import javaSpring.dto.request.BorrowSlipCreationRequest;
 import javaSpring.entity.Book;
 import javaSpring.entity.BorrowSlip;
 import javaSpring.entity.BorrowSlipDetail;
@@ -202,4 +203,87 @@ public class BorrowSlipService {
         }
     }
     
+    // 5. CẬP NHẬT PHIẾU MƯỢN (Header + Detail)
+     @Transactional
+    public BorrowSlip updateBorrowSlip(Long id, BorrowSlipUpdateRequest request) {
+        // 1. Tìm phiếu mượn cũ
+        BorrowSlip existingSlip = borrowSlipRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Borrow slip not found"));
+
+        // 2. Cập nhật thông tin cơ bản (Header)
+        if (request.getReaderId() != null) {
+            User newReader = userRepository.findById(request.getReaderId())
+                    .orElseThrow(() -> new RuntimeException("Reader not found"));
+            existingSlip.setReader(newReader);
+        }
+        if (request.getNote() != null) existingSlip.setNote(request.getNote());
+        
+        // Giả sử update ngày mượn cho toàn bộ sách trong phiếu
+        LocalDate newBorrowDate = request.getBorrowDate() != null ? request.getBorrowDate() : LocalDate.now();
+        LocalDate newDueDate = request.getDueDate() != null ? request.getDueDate() : newBorrowDate.plusDays(14);
+
+        // 3. XỬ LÝ DANH SÁCH SÁCH (QUAN TRỌNG)
+        List<BorrowSlipDetail> currentDetails = existingSlip.getDetails();
+        
+        // Lấy danh sách ID sách hiện tại trong DB
+        List<Long> currentBookIds = currentDetails.stream()
+                .map(detail -> detail.getBook().getId())
+                .collect(Collectors.toList());
+
+        // Danh sách ID sách mới từ Request
+        List<Long> newBookIds = request.getBookIds();
+
+        // 3a. Tìm sách bị loại bỏ (Có trong cũ nhưng không có trong mới)
+        // -> Trả lại kho, xóa detail
+        List<BorrowSlipDetail> detailsToRemove = currentDetails.stream()
+                .filter(detail -> !newBookIds.contains(detail.getBook().getId()))
+                .collect(Collectors.toList());
+
+        for (BorrowSlipDetail detail : detailsToRemove) {
+            Book book = detail.getBook();
+            book.setAvailableQuantity(book.getAvailableQuantity() + 1); // Cộng kho
+            bookRepository.save(book);
+            borrowSlipDetailRepository.delete(detail); // Xóa dòng chi tiết
+            existingSlip.getDetails().remove(detail); // Xóa khỏi list trong memory
+        }
+
+        // 3b. Tìm sách thêm mới (Có trong mới nhưng không có trong cũ)
+        // -> Trừ kho, tạo detail
+        List<Long> booksToAddIds = newBookIds.stream()
+                .filter(bookId -> !currentBookIds.contains(bookId))
+                .collect(Collectors.toList());
+
+        for (Long bookId : booksToAddIds) {
+            Book book = bookRepository.findById(bookId)
+                    .orElseThrow(() -> new RuntimeException("Book ID " + bookId + " not found"));
+
+            if (book.getAvailableQuantity() <= 0) {
+                throw new RuntimeException("Book '" + book.getTitle() + "' is out of stock");
+            }
+
+            book.setAvailableQuantity(book.getAvailableQuantity() - 1); // Trừ kho
+            bookRepository.save(book);
+
+            BorrowSlipDetail newDetail = new BorrowSlipDetail();
+            newDetail.setBorrowSlip(existingSlip);
+            newDetail.setBook(book);
+            newDetail.setStatus("BORROWED");
+            newDetail.setBorrowDate(newBorrowDate);
+            newDetail.setDueDate(newDueDate);
+            
+            borrowSlipDetailRepository.save(newDetail);
+        }
+
+        // 3c. Cập nhật ngày tháng cho các sách CŨ còn giữ lại
+        for (BorrowSlipDetail detail : existingSlip.getDetails()) {
+             // Chỉ update những cuốn chưa bị xóa
+             if (newBookIds.contains(detail.getBook().getId())) {
+                 detail.setBorrowDate(newBorrowDate);
+                 detail.setDueDate(newDueDate);
+                 borrowSlipDetailRepository.save(detail);
+             }
+        }
+
+        return borrowSlipRepository.save(existingSlip);
+    }
 }
