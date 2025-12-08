@@ -16,6 +16,7 @@ import javaSpring.repository.TagRepository;
 import javaSpring.repository.AuthorRepository;
 import javaSpring.repository.CategoryRepository;
 import javaSpring.repository.BookRepository;
+import javaSpring.repository.BorrowSlipDetailRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +29,7 @@ public class BookService {
     @Autowired private CategoryRepository categoryRepository;
     @Autowired private AuthorRepository authorRepository;
     @Autowired private TagRepository tagRepository;
+    @Autowired private BorrowSlipDetailRepository borrowSlipDetailRepository;
 
     // Tạo sách mới
     public Book createBook(BookCreationRequest request) {
@@ -94,11 +96,6 @@ public class BookService {
         return bookRepository.findByTitleContainingIgnoreCase(title);  // Tìm sách theo tên không phân biệt hoa thường
     }
 
-    // Xóa sách theo id
-    public void deleteBook(Long id) {
-        bookRepository.deleteById(id);
-    }
-
     // Cập nhật thông tin sách
     public Book updateBook(Long bookId, BookCreationRequest request) {
         Book book = getBook(bookId); // Tái sử dụng hàm getBook ở dưới để code gọn hơn
@@ -158,5 +155,27 @@ public class BookService {
 
         // Trả về List kết quả
         return bookPage.getContent();
+    }
+
+
+    // Xóa sách
+    public void deleteBook(Long bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
+        // 1. Kiểm tra xem sách này đã từng có giao dịch chưa (Mượn trả hoặc Đọc online)
+        boolean hasHistory = borrowSlipDetailRepository.existsByBookId(bookId);
+
+        if (hasHistory) {
+            // 2a. Nếu ĐÃ có lịch sử -> XÓA MỀM (Soft Delete)
+            // Chỉ ẩn sách đi, không xóa khỏi DB để giữ lịch sử phiếu mượn
+            book.setIsActive(false); 
+            bookRepository.save(book);
+        } else {
+            // 2b. Nếu CHƯA có lịch sử -> XÓA CỨNG (Hard Delete)
+            // Vì trong ERD bảng trung gian sach_tac_gia, sach_tag đã có ON DELETE CASCADE 
+            // nên Hibernate/DB sẽ tự xóa liên kết author/tag, không cần code thêm.
+            bookRepository.delete(book);
+        }
     }
 }

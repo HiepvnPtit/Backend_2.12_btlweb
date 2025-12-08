@@ -23,4 +23,6 @@ public interface BorrowSlipDetailRepository extends JpaRepository<BorrowSlipDeta
 
     // 4. Xem lịch sử mượn của một cuốn sách
     List<BorrowSlipDetail> findByBook_Id(Long bookId);
+
+    boolean existsByBookId(Long bookId);
 }
