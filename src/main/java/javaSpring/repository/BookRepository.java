@@ -45,4 +45,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     // mà có liên kết (JOIN) với bảng ebookPages
     @Query("SELECT DISTINCT b FROM Book b JOIN b.ebookPages")
     List<Book> findAllBooksWithEbookContent();
+
+    // Tìm tất cả sách chưa bị xóa mềm
+       List<Book> findByIsActiveTrue();
 }

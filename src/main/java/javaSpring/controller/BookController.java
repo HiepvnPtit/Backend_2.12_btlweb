@@ -87,6 +87,7 @@ public class BookController {
     @DeleteMapping("/{id}")
     public APIResponse<Void> deleteBook(@PathVariable Long id) {
         APIResponse<Void> response = new APIResponse<>();
+        response.setMessage("Book deleted successfully"); 
         bookService.deleteBook(id);  // Xóa sách theo ID từ service
         return response;
     }

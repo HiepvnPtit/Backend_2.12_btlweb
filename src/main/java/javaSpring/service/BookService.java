@@ -9,19 +9,21 @@ import javaSpring.entity.Category;
 import javaSpring.entity.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javaSpring.dto.request.BookCreationRequest;
 
 import javaSpring.repository.TagRepository;
 import javaSpring.repository.AuthorRepository;
 import javaSpring.repository.CategoryRepository;
+import javaSpring.repository.EbookPageRepository;
 import javaSpring.repository.BookRepository;
 import javaSpring.repository.BorrowSlipDetailRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
+import javaSpring.repository.ReadingHistoryRepository;
 
 @Service
 public class BookService {
@@ -30,6 +32,9 @@ public class BookService {
     @Autowired private AuthorRepository authorRepository;
     @Autowired private TagRepository tagRepository;
     @Autowired private BorrowSlipDetailRepository borrowSlipDetailRepository;
+     @Autowired private ReadingHistoryRepository readingHistoryRepository;
+      @Autowired private EbookPageRepository ebookPageRepository;
+    
 
     // Tạo sách mới
     public Book createBook(BookCreationRequest request) {
@@ -70,7 +75,9 @@ public class BookService {
 
     // Lấy danh sách tất cả sách
     public List<Book> getAllBooks() {
-        return bookRepository.findAll();
+        // return bookRepository.findAll();
+        // Thay vì findAll(), chỉ lấy sách còn Active
+        return bookRepository.findByIsActiveTrue();
     }
 
     // Lấy thông tin sách theo id
@@ -159,22 +166,34 @@ public class BookService {
 
 
     // Xóa sách
+    @Transactional // Bắt buộc có để đảm bảo tính toàn vẹn dữ liệu
     public void deleteBook(Long bookId) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
 
-        // 1. Kiểm tra xem sách này đã từng có giao dịch chưa (Mượn trả hoặc Đọc online)
-        boolean hasHistory = borrowSlipDetailRepository.existsByBookId(bookId);
+        // Bước 1: Kiểm tra ràng buộc
+        // A. Kiểm tra xem sách giấy đã từng được mượn chưa?
+        boolean hasPhysicalHistory = borrowSlipDetailRepository.existsByBookId(bookId);
+        
+        // B. Kiểm tra xem sách ebook đã từng được đọc chưa? (Dùng ReadingHistory)
+        boolean hasDigitalHistory = readingHistoryRepository.existsByBookId(bookId);
 
-        if (hasHistory) {
-            // 2a. Nếu ĐÃ có lịch sử -> XÓA MỀM (Soft Delete)
-            // Chỉ ẩn sách đi, không xóa khỏi DB để giữ lịch sử phiếu mượn
-            book.setIsActive(false); 
+        // Bước 2: Quyết định Xóa Mềm hay Xóa Cứng
+        if (hasPhysicalHistory || hasDigitalHistory) {
+            // === XÓA MỀM (SOFT DELETE) ===
+            // Nếu đã có lịch sử dùng, chỉ ẩn sách đi
+            book.setIsActive(false);
             bookRepository.save(book);
         } else {
-            // 2b. Nếu CHƯA có lịch sử -> XÓA CỨNG (Hard Delete)
-            // Vì trong ERD bảng trung gian sach_tac_gia, sach_tag đã có ON DELETE CASCADE 
-            // nên Hibernate/DB sẽ tự xóa liên kết author/tag, không cần code thêm.
+            // === XÓA CỨNG (HARD DELETE) ===
+            // Nếu chưa ai dùng, xóa vĩnh viễn khỏi Database
+            
+            // B2.1: Phải xóa các trang Ebook (EbookPage) của sách này trước
+            // (Nếu không xóa page trước, DB sẽ báo lỗi khóa ngoại)
+            ebookPageRepository.deleteByBookId(bookId);
+            
+            // B2.2: Xóa sách
+            // Các bảng trung gian (sach_tac_gia, sach_tag) sẽ tự xóa nhờ Cascade của JPA
             bookRepository.delete(book);
         }
     }

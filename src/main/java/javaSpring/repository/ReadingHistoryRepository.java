@@ -17,4 +17,7 @@ public interface ReadingHistoryRepository extends JpaRepository<ReadingHistory, 
     // Lấy lịch sử đọc sách theo bookId
     @Query("SELECT rh FROM ReadingHistory rh WHERE rh.book.id = :bookId ORDER BY rh.startTime DESC")
     List<ReadingHistory> findByBookId(@Param("bookId") Long bookId);
+
+    // Kiểm tra xem cuốn sách này đã từng có ai đọc chưa (trả về true/false)
+    boolean existsByBookId(Long bookId);
 }
