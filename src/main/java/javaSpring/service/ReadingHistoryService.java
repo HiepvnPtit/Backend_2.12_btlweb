@@ -26,11 +26,9 @@ public class ReadingHistoryService {
         Book book = bookRepository.findById(request.getBookId())
                 .orElseThrow(() -> new RuntimeException("Book not found"));
 
-        // Tìm xem user có phiên đọc nào chưa kết thúc (hoặc vừa mới đọc gần đây) không?
-        // Ở đây ta làm đơn giản: Tạo record mới mỗi lần mở sách, 
-        // hoặc update record cũ nếu trong cùng 1 khoảng thời gian ngắn (tùy logic)
+        // Tìm xem user có phiên đọc nào chưa kết thúc (hoặc vừa mới đọc gần đây) không
         
-        // Logic đơn giản: Luôn tạo mới phiên đọc hoặc cập nhật record cuối cùng
+        // Luôn tạo mới phiên đọc hoặc cập nhật record cuối cùng
         ReadingHistory history = historyRepository.findTopByUserIdAndBookIdOrderByEndTimeDesc(request.getUserId(), request.getBookId())
                 .orElse(null);
 

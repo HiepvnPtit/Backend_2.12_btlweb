@@ -38,7 +38,7 @@ public class CreateAdmin {
                 User user = new User();
                 user.setUsername("admin");
                 user.setRoles(roles);
-                user.setPassword(passwordEncoder.encode("admin"));
+                user.setPassword(passwordEncoder.encode("string"));
 
                 //lưu thông tin 
                 userRepository.save(user);

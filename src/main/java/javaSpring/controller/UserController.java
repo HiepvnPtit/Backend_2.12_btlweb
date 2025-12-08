@@ -93,4 +93,22 @@ public class UserController {
         userService.deleteUser(userId);
         return apiResponse;
     }
+
+    // Trao quyền admin cho user
+    @PutMapping("/addAdmin/{userId}")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    APIResponse<User> addAdmin(@PathVariable Long userId){
+        APIResponse<User> apiResponse = new APIResponse<>();
+        apiResponse.setResult(userService.addAdmin(userId));
+        return apiResponse;
+    }
+
+    // Trảm quyền admin
+    @PutMapping("/removeAdmin/{userId}")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    APIResponse<User> removeAdmin(@PathVariable Long userId){
+        APIResponse<User> apiResponse = new APIResponse<>();
+        apiResponse.setResult(userService.removeAdmin(userId));
+        return apiResponse;
+    }
 }

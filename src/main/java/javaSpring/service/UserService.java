@@ -2,6 +2,7 @@ package javaSpring.service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -85,6 +86,7 @@ public void deleteUser(Long id) {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    // Cập nhật thông tin user
     public User updateUser(Long id, UserUpdateRequest request){
         User user = getUser(id);
 
@@ -101,5 +103,22 @@ public void deleteUser(Long id) {
 
         return userRepository.save(user);
     }
- 
+    
+    // Trao quyền admin cho user
+    public User addAdmin(Long id) {
+        User user = getUser(id);
+        Set<String> roles = new HashSet<>();
+        roles.add(Role.ADMIN.name());
+        user.setRoles(roles);
+        return userRepository.save(user);
+    }
+
+    // Trảm quyền admin
+    public User removeAdmin(Long id) {
+        User user = getUser(id);
+        Set<String> roles = new HashSet<>();
+        roles.add(Role.USER.name());
+        user.setRoles(roles);
+        return userRepository.save(user);
+    }
 }
