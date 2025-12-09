@@ -101,4 +101,12 @@ public class BookController {
         response.setResult(bookService.getBooksByPage(pageNumber));
         return response;
     }
+
+    // Lấy 10 sách mới nhất
+    @GetMapping("10books")
+    public APIResponse<List<Book>> getTop10Books() {
+        APIResponse<List<Book>> response = new APIResponse<>();
+        response.setResult(bookService.getTop10NewestBooks());
+        return response;
+    }
 }

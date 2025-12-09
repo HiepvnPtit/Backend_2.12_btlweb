@@ -7,6 +7,9 @@ import javaSpring.entity.Book;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
     
@@ -48,4 +51,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     // Tìm tất cả sách chưa bị xóa mềm
        List<Book> findByIsActiveTrue();
+
+       // Tìm sách chưa bị xóa mềm + Có phân trang
+    Page<Book> findByIsActiveTrue(Pageable pageable);
 }

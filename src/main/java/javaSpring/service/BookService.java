@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import javaSpring.repository.ReadingHistoryRepository;
+import org.springframework.data.domain.Sort;
 
 @Service
 public class BookService {
@@ -196,5 +197,14 @@ public class BookService {
             // Các bảng trung gian (sach_tac_gia, sach_tag) sẽ tự xóa nhờ Cascade của JPA
             bookRepository.delete(book);
         }
+    }
+
+    // API lấy 10 sách mới nhất
+    public List<Book> getTop10NewestBooks() {
+        // PageRequest.of(trang số 0, lấy 10 phần tử, sắp xếp ID giảm dần)
+        Pageable limit = PageRequest.of(0, 10, Sort.by("id").descending());
+        
+        // Gọi hàm findByIsActiveTrue để tránh lấy sách đã xóa mềm
+        return bookRepository.findByIsActiveTrue(limit).getContent();
     }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,8 @@ import javaSpring.enums.Role;
 import javaSpring.exception.AppException;
 import javaSpring.exception.ErrorCode;
 import javaSpring.repository.UserRepository;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @Service
 public class UserService {
@@ -120,5 +123,14 @@ public void deleteUser(Long id) {
         roles.add(Role.USER.name());
         user.setRoles(roles);
         return userRepository.save(user);
+    }
+
+     // API lấy 10 user mới nhất
+    public List<User> getTop10NewestUsers() {
+        // Lấy 10 người, sắp xếp theo ngày tạo mới nhất (hoặc id)
+        Pageable limit = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+        
+        // Chỉ lấy user đang ACTIVE
+        return userRepository.findByStatus("ACTIVE", limit).getContent();
     }
 }

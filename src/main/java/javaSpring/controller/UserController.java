@@ -111,4 +111,12 @@ public class UserController {
         apiResponse.setResult(userService.removeAdmin(userId));
         return apiResponse;
     }
+
+    // Lấy 10 user mới nhất
+    @GetMapping("/10users")
+    public APIResponse<List<User>> getTop10Users() {
+        APIResponse<List<User>> response = new APIResponse<>();
+        response.setResult(userService.getTop10NewestUsers());
+        return response;
+    }
 }
