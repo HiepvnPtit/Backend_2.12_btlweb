@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 public class UserCreationRequest {
 
-    @Size(min = 3, max= 10, message = "USERNAME_INVALID")
+    @Size(min = 3, message = "USERNAME_INVALID")
     private String username;
 
     @Size(min = 8, message = "PASSWORD_INVALID")
